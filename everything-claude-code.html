@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Everything Claude Code — 全功能指南</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f3ee;
+    --bg2: #eceae3;
+    --surface: #ffffff;
+    --border: #d8d4c8;
+    --border-dark: #b8b3a4;
+    --accent: #b89000;
+    --accent-bg: #fff9e0;
+    --accent2: #1a7a4a;
+    --accent2-bg: #e6f5ec;
+    --accent3: #c0392b;
+    --accent3-bg: #fdecea;
+    --blue: #1a4fa0;
+    --blue-bg: #e8eef8;
+    --text: #3a3630;
+    --text-mid: #6b6557;
+    --text-dim: #9a9284;
+    --text-bright: #1a1714;
+    --mono: 'DM Mono', monospace;
+    --sans: 'Syne', sans-serif;
+    --r: 6px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); overflow-x: hidden; }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    padding: 2rem;
+    background: var(--surface);
+    border-bottom: 2px solid var(--border-dark);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-grid-bg {
+    position: absolute; inset: 0; pointer-events: none;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 39px, var(--border) 39px, var(--border) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, var(--border) 39px, var(--border) 40px);
+    opacity: 0.3;
+  }
+  .hero-glow {
+    position: absolute; top: -15%; right: -15%;
+    width: 60vw; height: 60vw; pointer-events: none;
+    background: radial-gradient(circle, rgba(184,144,0,0.10) 0%, transparent 65%);
+  }
+  nav {
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: var(--mono); font-size: 0.68rem; color: var(--text-dim);
+    letter-spacing: 0.1em; text-transform: uppercase; position: relative; z-index: 1;
+  }
+  .nav-pill {
+    border: 1.5px solid var(--border-dark); padding: 0.35rem 0.8rem;
+    background: var(--bg); border-radius: 20px; color: var(--text-mid);
+  }
+  .nav-badge {
+    background: var(--accent-bg); border: 1.5px solid var(--accent);
+    color: var(--accent); padding: 0.25rem 0.7rem; border-radius: 20px; font-size: 0.6rem;
+  }
+  .hero-center {
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 4rem 0 2rem; position: relative; z-index: 1;
+  }
+  .eyebrow {
+    font-family: var(--mono); font-size: 0.64rem; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 1.5rem;
+    display: flex; align-items: center; gap: 0.7rem;
+  }
+  .eyebrow::before { content: ''; width: 2.5rem; height: 2px; background: var(--accent); }
+  h1 {
+    font-size: clamp(3rem, 9vw, 7rem); font-weight: 800; line-height: 0.92;
+    color: var(--text-bright); letter-spacing: -0.03em; margin-bottom: 2rem;
+  }
+  h1 .hi { color: var(--accent); display: block; }
+  .hero-desc {
+    max-width: 540px; font-size: 0.98rem; line-height: 1.75;
+    color: var(--text-mid); margin-bottom: 3rem;
+  }
+  .hero-stats {
+    display: flex; font-family: var(--mono); border: 1.5px solid var(--border-dark);
+    border-radius: var(--r); overflow: hidden; width: fit-content; background: var(--bg);
+  }
+  .stat { padding: 1.1rem 1.8rem; border-right: 1.5px solid var(--border-dark); text-align: center; }
+  .stat:last-child { border-right: none; }
+  .stat-n { font-size: 1.7rem; font-weight: 500; color: var(--text-bright); display: block; margin-bottom: 0.3rem; }
+  .stat-l { font-size: 0.58rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-dim); }
+  .scroll-hint {
+    font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--text-dim); display: flex; align-items: center;
+    gap: 0.5rem; position: relative; z-index: 1; animation: bob 2.5s ease-in-out infinite;
+  }
+  @keyframes bob { 0%,100%{transform:translateY(0);opacity:.4} 50%{transform:translateY(5px);opacity:1} }
+
+  /* COMMON */
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 5rem 2rem; }
+  .sl {
+    font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--text-dim); margin-bottom: 0.7rem;
+    display: flex; align-items: center; gap: 0.8rem;
+  }
+  .sl::after { content:''; height:1px; background:var(--border); width:5rem; }
+  h2 {
+    font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 700; color: var(--text-bright);
+    letter-spacing: -0.025em; line-height: 1.1; margin-bottom: 0.8rem;
+  }
+  .sub { font-size: 0.9rem; color: var(--text-mid); line-height: 1.7; max-width: 560px; margin-bottom: 3.5rem; }
+  hr { border: none; border-top: 1.5px solid var(--border); }
+
+  /* ARCH */
+  .arch-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(260px,1fr)); gap: 1.1rem; }
+  .arch-card {
+    background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--r);
+    padding: 2rem; position: relative; transition: box-shadow 0.2s, border-color 0.2s;
+  }
+  .arch-card:hover { border-color: var(--border-dark); box-shadow: 0 4px 18px rgba(0,0,0,.07); }
+  .arch-n { position:absolute; top:1.2rem; right:1.2rem; font-family:var(--mono); font-size:0.55rem; color:var(--text-dim); }
+  .arch-icon { font-size:1.5rem; margin-bottom:0.9rem; display:block; }
+  .arch-card h3 { font-size:0.95rem; font-weight:700; color:var(--text-bright); margin-bottom:0.5rem; }
+  .arch-card > p { font-size:0.8rem; line-height:1.65; color:var(--text-mid); margin-bottom:1.1rem; }
+  .tag {
+    display:inline-block; font-family:var(--mono); font-size:0.56rem;
+    letter-spacing:0.1em; text-transform:uppercase; padding:0.22rem 0.55rem;
+    border-radius:4px; font-weight:500;
+  }
+  .tg { background:var(--accent-bg); color:var(--accent); }
+  .tge { background:var(--accent2-bg); color:var(--accent2); }
+  .tr { background:var(--accent3-bg); color:var(--accent3); }
+  .tb { background:var(--blue-bg); color:var(--blue); }
+
+  .eg-box {
+    margin-top:1.1rem; background:var(--bg); border:1px solid var(--border);
+    border-radius:var(--r); padding:0.9rem 1.1rem; border-left:3px solid var(--accent);
+  }
+  .eg-label { font-family:var(--mono); font-size:0.54rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--text-dim); margin-bottom:0.45rem; }
+  .eg-box p { font-size:0.77rem; color:var(--text); line-height:1.6; margin:0; }
+
+  /* CASES */
+  .cases-bg { background:var(--bg2); border-top:1.5px solid var(--border); border-bottom:1.5px solid var(--border); }
+  .cases-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:1.1rem; }
+  .case-card {
+    background:var(--surface); border:1.5px solid var(--border); border-radius:var(--r);
+    overflow:hidden; transition:box-shadow 0.2s;
+  }
+  .case-card:hover { box-shadow:0 6px 24px rgba(0,0,0,.08); }
+  .case-hd {
+    padding:1.2rem 1.5rem; border-bottom:1px solid var(--border);
+    display:flex; align-items:center; gap:0.8rem;
+  }
+  .case-ico { font-size:1.2rem; }
+  .case-title { font-size:0.88rem; font-weight:700; color:var(--text-bright); flex:1; }
+  .case-bd { padding:1.3rem 1.5rem; }
+  .scenario { font-size:0.8rem; color:var(--text-mid); margin-bottom:1rem; line-height:1.6; }
+  .terminal {
+    background:#1a1714; border-radius:var(--r); padding:1rem 1.2rem; margin-bottom:1rem;
+  }
+  .t-bar { display:flex; align-items:center; gap:0.4rem; margin-bottom:0.8rem; }
+  .dot { width:9px; height:9px; border-radius:50%; }
+  .dr{background:#ff5f57;} .dy{background:#ffbd2e;} .dg{background:#28ca41;}
+  .t-input { font-family:var(--mono); font-size:0.7rem; color:#c8c8c8; display:flex; align-items:baseline; gap:0.5rem; flex-wrap:wrap; }
+  .t-ps { color:#5aff8a; } .t-cmd { color:#e8d87a; } .t-arg { color:#87ceeb; }
+  .t-out {
+    font-family:var(--mono); font-size:0.67rem; color:#aaa;
+    border-top:1px solid #333; margin-top:0.7rem; padding-top:0.7rem;
+    line-height:1.8; white-space:pre-wrap;
+  }
+  .case-ok {
+    display:flex; align-items:flex-start; gap:0.6rem; background:var(--accent2-bg);
+    border:1px solid #b2d9c0; border-radius:var(--r); padding:0.8rem 1rem;
+    font-size:0.77rem; color:var(--accent2); line-height:1.55;
+  }
+  .ck { flex-shrink:0; }
+
+  /* AGENTS */
+  .agents-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(195px,1fr)); gap:0.8rem; }
+  .agent {
+    border:1.5px solid var(--border); border-radius:var(--r);
+    padding:1.1rem 1.3rem; background:var(--surface);
+    transition:border-color 0.2s,transform 0.15s,box-shadow 0.15s;
+  }
+  .agent:hover { border-color:var(--border-dark); transform:translateY(-2px); box-shadow:0 3px 12px rgba(0,0,0,.06); }
+  .at { font-family:var(--mono); font-size:0.54rem; letter-spacing:0.14em; text-transform:uppercase; margin-bottom:0.35rem; font-weight:500; }
+  .an { font-size:0.86rem; font-weight:700; color:var(--text-bright); margin-bottom:0.25rem; }
+  .ad { font-size:0.71rem; color:var(--text-dim); line-height:1.5; }
+
+  /* COMMANDS */
+  .cmd-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(285px,1fr)); gap:0.7rem; }
+  .cmd-row {
+    display:flex; align-items:flex-start; gap:0.9rem; padding:0.9rem 1.1rem;
+    background:var(--surface); border:1.5px solid var(--border); border-radius:var(--r);
+    transition:border-color 0.18s;
+  }
+  .cmd-row:hover { border-color:var(--accent2); }
+  .cn { font-family:var(--mono); font-size:0.72rem; color:var(--accent2); white-space:nowrap; min-width:115px; font-weight:500; }
+  .cd { font-size:0.75rem; color:var(--text-mid); line-height:1.5; }
+
+  /* TIPS */
+  .tips-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.1rem; }
+  @media(max-width:640px){.tips-grid{grid-template-columns:1fr}}
+  .tip {
+    background:var(--surface); border:1.5px solid var(--border);
+    border-radius:var(--r); padding:1.8rem;
+  }
+  .tip h3 { font-size:0.92rem; font-weight:700; color:var(--text-bright); margin-bottom:0.6rem; }
+  .tip p { font-size:0.8rem; line-height:1.7; color:var(--text-mid); }
+  .tip-code {
+    display:block; margin-top:1rem; font-family:var(--mono); font-size:0.68rem;
+    background:#1a1714; color:#a8e6a0; padding:1rem 1.2rem;
+    border-radius:var(--r); white-space:pre; overflow-x:auto; line-height:1.8;
+  }
+
+  /* INSTALL */
+  .install-wrap { margin-top:3.5rem; border-radius:var(--r); overflow:hidden; border:1.5px solid var(--border-dark); }
+  .inst-bar {
+    background:#2a2724; padding:0.65rem 1.2rem;
+    display:flex; align-items:center; gap:0.45rem;
+  }
+  .inst-bar span { margin-left:auto; font-family:var(--mono); font-size:0.58rem; color:#555; letter-spacing:0.1em; }
+  .inst-body { background:#1a1714; padding:1.8rem 2rem; }
+  .inst-body pre { font-family:var(--mono); font-size:0.75rem; line-height:2; color:#c8c8c8; overflow-x:auto; }
+  .ip{color:#555;user-select:none} .ic{color:#87ceeb} .ico{color:#666} .iok{color:#5aff8a}
+
+  /* FOOTER */
+  footer {
+    border-top:1.5px solid var(--border-dark); padding:2.5rem 2rem;
+    display:flex; justify-content:space-between; align-items:center;
+    font-family:var(--mono); font-size:0.63rem; color:var(--text-dim);
+    letter-spacing:0.1em; background:var(--surface);
+  }
+  .fl { color:var(--accent2); text-decoration:none; }
+  .fl:hover { text-decoration:underline; }
+
+  @media(max-width:640px){
+    h1{font-size:2.8rem}
+    .hero-stats{flex-direction:column;width:100%}
+    .stat{border-right:none;border-bottom:1.5px solid var(--border-dark)}
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-grid-bg"></div>
+  <div class="hero-glow"></div>
+  <nav>
+    <span class="nav-pill">everything-claude-code</span>
+    <span class="nav-badge">v2.1+ · Open Source</span>
+  </nav>
+  <div class="hero-center">
+    <div class="eyebrow">Claude Code 增强配置集</div>
+    <h1>Everything<span class="hi">Claude Code</span></h1>
+    <p class="hero-desc">10 个月实战打磨的生产级配置层，为 Claude Code 叠加专家级 Agent、技能库、快捷命令与持续学习系统——让你用 AI 像专业工程师一样构建产品。</p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-n">13</span><span class="stat-l">专业 Agents</span></div>
+      <div class="stat"><span class="stat-n">40+</span><span class="stat-l">按需技能</span></div>
+      <div class="stat"><span class="stat-n">32</span><span class="stat-l">快捷命令</span></div>
+      <div class="stat"><span class="stat-n">8h</span><span class="stat-l">黑客松夺冠</span></div>
+    </div>
+  </div>
+  <div class="scroll-hint">↓ 向下探索</div>
+</div>
+
+<hr>
+
+<!-- ARCHITECTURE -->
+<div class="wrap">
+  <div class="sl">核心架构</div>
+  <h2>四层配置体系</h2>
+  <p class="sub">不是单一工具，而是一套完整的工程师级配置层，每层解决一类具体问题。</p>
+  <div class="arch-grid">
+
+    <div class="arch-card">
+      <span class="arch-n">01</span>
+      <span class="arch-icon">🤖</span>
+      <h3>Agents 代理层</h3>
+      <p>13 个专家代理，分层委托模型。编排代理调度专项代理，各司其职，避免越权。</p>
+      <span class="tag tg">Orchestrator → Specialist</span>
+      <div class="eg-box">
+        <div class="eg-label">📋 实战案例</div>
+        <p>说「做用户认证模块」，Planner 自动拆解：Backend Dev 写 JWT 逻辑、Database 设计 users 表、Security 检查 SQL 注入，三个代理分工协作、互不干扰。</p>
+      </div>
+    </div>
+
+    <div class="arch-card">
+      <span class="arch-n">02</span>
+      <span class="arch-icon">⚡</span>
+      <h3>Skills 技能库</h3>
+      <p>40+ 领域技能模块，按需引入，不预加载节省 Token。涵盖后端、前端、数据库、DevOps 等。</p>
+      <span class="tag tge">On-Demand Loading</span>
+      <div class="eg-box">
+        <div class="eg-label">📋 实战案例</div>
+        <p>开发 Redis 缓存层时告诉 Claude「加载 database-cache 技能」，它会输出缓存穿透防护、TTL 策略的完整方案，而非通用建议。</p>
+      </div>
+    </div>
+
+    <div class="arch-card">
+      <span class="arch-n">03</span>
+      <span class="arch-icon">⌨️</span>
+      <h3>Commands 命令集</h3>
+      <p>32 个斜杠命令，一行触发完整工作流。TDD、安全扫描、代码审查、多代理并行，开箱即用。</p>
+      <span class="tag tr">Slash Commands</span>
+      <div class="eg-box">
+        <div class="eg-label">📋 实战案例</div>
+        <p>写完支付接口后输入 <code style="font-family:var(--mono);background:var(--bg2);padding:1px 4px;border-radius:3px;font-size:0.75em">/security-scan</code>，自动按 OWASP Top 10 逐项检查，精确到行号和修复方案。</p>
+      </div>
+    </div>
+
+    <div class="arch-card">
+      <span class="arch-n">04</span>
+      <span class="arch-icon">🧠</span>
+      <h3>Memory 持续学习</h3>
+      <p>跨会话记忆系统，积累项目上下文、架构决策与团队规范，越用越懂你的代码库。</p>
+      <span class="tag tb">Cross-Session Memory</span>
+      <div class="eg-box">
+        <div class="eg-label">📋 实战案例</div>
+        <p>第一天告诉它「我们用 PostgreSQL + Prisma，命名用 camelCase」，此后每次生成代码都自动遵守，无需重复说明。</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<hr>
+
+<!-- CASE STUDIES -->
+<div class="cases-bg">
+  <div class="wrap">
+    <div class="sl">命令演示</div>
+    <h2>关键命令的实际用法</h2>
+    <p class="sub">从输入到输出，看清楚每个命令能做什么——真实的对话示例，不是功能描述。</p>
+    <div class="cases-grid">
+
+      <!-- /plan -->
+      <div class="case-card">
+        <div class="case-hd">
+          <span class="case-ico">🗺️</span>
+          <span class="case-title">/plan — 项目规划</span>
+          <span class="tag tg">Planner</span>
+        </div>
+        <div class="case-bd">
+          <p class="scenario">有新功能想法但不知如何拆解，让 Planner 帮你制定带时间估算的执行计划。</p>
+          <div class="terminal">
+            <div class="t-bar"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div>
+            <div class="t-input"><span class="t-ps">›</span><span class="t-cmd">/plan</span><span class="t-arg">为博客添加评论功能，需防垃圾、支持嵌套回复</span></div>
+            <div class="t-out">📋 任务拆解（预计 4h）
+
+阶段 1 — 数据库 (30min)
+  • comments 表：id, post_id, parent_id, user_id
+  • 软删除字段 deleted_at（嵌套回复需要）
+
+阶段 2 — 后端 API (1.5h)
+  • POST /api/comments（创建）
+  • GET /api/posts/:id/comments（树形）
+  • 接入 Akismet API 垃圾检测
+
+阶段 3 — 前端组件 (1.5h)
+  • CommentTree 递归组件 + 乐观更新
+
+阶段 4 — 测试 (30min)
+  • 嵌套深度 & 垃圾拦截边界测试</div>
+          </div>
+          <div class="case-ok"><span class="ck">✓</span><span>模糊需求直接转为分阶段执行计划，含时间估算，可直接作任务列表使用。</span></div>
+        </div>
+      </div>
+
+      <!-- /tdd -->
+      <div class="case-card">
+        <div class="case-hd">
+          <span class="case-ico">🧪</span>
+          <span class="case-title">/tdd — 测试驱动开发</span>
+          <span class="tag tge">Testing Agent</span>
+        </div>
+        <div class="case-bd">
+          <p class="scenario">先写失败测试，再让 Claude 实现让测试通过的代码，从根源保证覆盖率。</p>
+          <div class="terminal">
+            <div class="t-bar"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div>
+            <div class="t-input"><span class="t-ps">›</span><span class="t-cmd">/tdd</span><span class="t-arg">密码重置功能，token 24小时有效</span></div>
+            <div class="t-out">// ❌ 先写失败测试
+it('token 在 24h 内有效', async () => {
+  const token = await generateResetToken(user.id)
+  expect(await verifyToken(token)).toBe(true)
+})
+it('过期 token 应报错', async () => {
+  await expect(verifyToken(expiredToken))
+    .rejects.toThrow('Token expired')
+})
+
+// ✅ 再实现让测试通过的代码
+// → src/auth/passwordReset.ts</div>
+          </div>
+          <div class="case-ok"><span class="ck">✓</span><span>边界条件（过期、无效 token）在写实现之前就覆盖，不会事后补测试。</span></div>
+        </div>
+      </div>
+
+      <!-- /security-scan -->
+      <div class="case-card">
+        <div class="case-hd">
+          <span class="case-ico">🔐</span>
+          <span class="case-title">/security-scan — 安全审计</span>
+          <span class="tag tr">Security Agent</span>
+        </div>
+        <div class="case-bd">
+          <p class="scenario">功能写完后一键扫描 OWASP Top 10，精确到行号和修复方案，比手动 Review 更全面。</p>
+          <div class="terminal">
+            <div class="t-bar"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div>
+            <div class="t-input"><span class="t-ps">›</span><span class="t-cmd">/security-scan</span><span class="t-arg">src/api/users.ts</span></div>
+            <div class="t-out">🔍 OWASP Top 10 扫描结果
+
+❌ A03 注入漏洞（高危）
+  第 47 行：WHERE id = ${req.params.id}
+  → 改用参数化查询：WHERE id = $1
+
+⚠️  A01 权限控制（中危）
+  /api/users/:id 缺少所有者校验
+  → 添加 if (user.id !== req.user.id)
+
+✅ A02 加密失效 — 通过
+✅ A07 认证机制 — 通过
+
+共 2 问题，1 高危需立即修复</div>
+          </div>
+          <div class="case-ok"><span class="ck">✓</span><span>精确到行号 + 修复代码，高危优先，不是泛泛的安全建议。</span></div>
+        </div>
+      </div>
+
+      <!-- /multi-workflow -->
+      <div class="case-card">
+        <div class="case-hd">
+          <span class="case-ico">🔀</span>
+          <span class="case-title">/multi-workflow — 并行开发</span>
+          <span class="tag tb">Multi-Agent</span>
+        </div>
+        <div class="case-bd">
+          <p class="scenario">前后端同步推进的复杂功能，多个代理并行工作，总耗时大幅压缩。</p>
+          <div class="terminal">
+            <div class="t-bar"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div>
+            <div class="t-input"><span class="t-ps">›</span><span class="t-cmd">/multi-workflow</span><span class="t-arg">文件上传（拖拽前端 + S3 后端 + CDN）</span></div>
+            <div class="t-out">🚀 并行启动 3 个代理
+
+[Backend]  正在写 S3 预签名 URL 上传接口...
+[Frontend] 正在写 Dropzone 组件 + 进度条...
+[DevOps]   正在配置 S3 + CloudFront + CORS...
+
+🔗 接口契约已同步至前端代理
+⏱  预计 8min（串行需 25min）</div>
+          </div>
+          <div class="case-ok"><span class="ck">✓</span><span>三代理并行、自动对齐接口契约，总耗时从 25 分钟压缩到 8 分钟。</span></div>
+        </div>
+      </div>
+
+      <!-- /code-review -->
+      <div class="case-card">
+        <div class="case-hd">
+          <span class="case-ico">👁️</span>
+          <span class="case-title">/code-review — 代码审查</span>
+          <span class="tag tg">Code Reviewer</span>
+        </div>
+        <div class="case-bd">
+          <p class="scenario">PR 提交前让 Code Reviewer 代理先过一遍，找出 bug、性能隐患和规范问题。</p>
+          <div class="terminal">
+            <div class="t-bar"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div>
+            <div class="t-input"><span class="t-ps">›</span><span class="t-cmd">/code-review</span><span class="t-arg">src/hooks/useAuth.ts</span></div>
+            <div class="t-out">📝 代码审查报告
+
+🐛 Bug（第 23 行）
+  useEffect 缺少 cleanup → 内存泄漏
+  → return () => subscription.unsubscribe()
+
+⚡ 性能（第 41 行）
+  每次渲染重建 userContext
+  → useMemo 包裹，依赖 [user.id]
+
+📖 可读性（第 67 行）
+  嵌套 4 层 if，建议提取 isAuthValid()
+
+✅ 整体结构良好，错误处理完整
+评分：7.5 / 10</div>
+          </div>
+          <div class="case-ok"><span class="ck">✓</span><span>Bug、性能、可读性分类呈现，每条给出具体修复方案，并附整体评分。</span></div>
+        </div>
+      </div>
+
+      <!-- /optimize -->
+      <div class="case-card">
+        <div class="case-hd">
+          <span class="case-ico">⚡</span>
+          <span class="case-title">/optimize — 性能优化</span>
+          <span class="tag tr">Performance Agent</span>
+        </div>
+        <div class="case-bd">
+          <p class="scenario">接口响应变慢，用 Performance Agent 定位瓶颈并给出可落地的优化方案。</p>
+          <div class="terminal">
+            <div class="t-bar"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div>
+            <div class="t-input"><span class="t-ps">›</span><span class="t-cmd">/optimize</span><span class="t-arg">GET /api/feed 接口平均响应 2.3s</span></div>
+            <div class="t-out">🔍 性能分析
+
+瓶颈 1 — N+1 查询（最高优先级）
+  循环内 await post.getAuthor() × 50 次
+  → 改用 include: { author: true }
+  预计提升：2.3s → 0.4s
+
+瓶颈 2 — 缺少分页缓存
+  热门 feed 每次全量查询
+  → Redis 缓存 TTL 60s
+  预计提升：减少 80% DB 压力
+
+建议按顺序修复，修复 1 后重新测速</div>
+          </div>
+          <div class="case-ok"><span class="ck">✓</span><span>精确定位 N+1 查询根因，给出预期提升数据，按优先级排序修复。</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<!-- AGENTS -->
+<div class="wrap">
+  <div class="sl">代理列表</div>
+  <h2>13 个专业代理</h2>
+  <p class="sub">编排层负责规划调度，专项层专注执行，每个代理都有明确的工具权限边界。</p>
+  <div class="agents-grid">
+    <div class="agent"><div class="at" style="color:var(--accent)">编排层</div><div class="an">Planner</div><div class="ad">任务拆解，制定执行计划，协调多代理</div></div>
+    <div class="agent"><div class="at" style="color:var(--accent)">编排层</div><div class="an">Architect</div><div class="ad">系统架构设计与技术选型决策</div></div>
+    <div class="agent"><div class="at" style="color:var(--accent2)">专项层</div><div class="an">Backend Dev</div><div class="ad">API 设计、服务端逻辑实现</div></div>
+    <div class="agent"><div class="at" style="color:var(--accent2)">专项层</div><div class="an">Frontend Dev</div><div class="ad">React/Next.js 组件与交互开发</div></div>
+    <div class="agent"><div class="at" style="color:var(--accent2)">专项层</div><div class="an">Database</div><div class="ad">数据库设计、查询优化与迁移</div></div>
+    <div class="agent"><div class="at" style="color:var(--accent2)">专项层</div><div class="an">DevOps</div><div class="ad">Docker、CI/CD 与部署配置</div></div>
+    <div class="agent"><div class="at" style="color:var(--accent2)">专项层</div><div class="an">Security</div><div class="ad">OWASP 安全审计与漏洞扫描</div></div>
+    <div class="agent"><div class="at" style="color:var(--accent2)">专项层</div><div class="an">Testing</div><div class="ad">单元测试、E2E 与覆盖率验证</div></div>
+    <div class="agent"><div class="at" style="color:var(--accent2)">专项层</div><div class="an">Code Reviewer</div><div class="ad">代码质量审查与最佳实践</div></div>
+    <div class="agent"><div class="at" style="color:var(--accent2)">专项层</div><div class="an">Documentation</div><div class="ad">技术文档自动生成与维护</div></div>
+    <div class="agent"><div class="at" style="color:var(--accent3)">新增</div><div class="an">PM2 Manager</div><div class="ad">多服务进程管理与编排</div></div>
+    <div class="agent"><div class="at" style="color:var(--accent3)">新增</div><div class="an">Multi-Agent</div><div class="ad">复杂多代理并行工作流协调</div></div>
+    <div class="agent"><div class="at" style="color:var(--accent3)">新增</div><div class="an">Performance</div><div class="ad">性能瓶颈分析与优化建议</div></div>
+  </div>
+</div>
+
+<hr>
+
+<!-- COMMANDS -->
+<div class="cases-bg">
+  <div class="wrap">
+    <div class="sl">斜杠命令</div>
+    <h2>32 个快捷工作流</h2>
+    <p class="sub">常用命令速查，命令即工作流，不需要额外配置。</p>
+    <div class="cmd-grid">
+      <div class="cmd-row"><span class="cn">/plan</span><span class="cd">项目任务拆解，生成带时间估算的执行计划</span></div>
+      <div class="cmd-row"><span class="cn">/architect</span><span class="cd">系统架构设计与技术方案规划</span></div>
+      <div class="cmd-row"><span class="cn">/tdd</span><span class="cd">先写失败测试，再实现让测试通过的代码</span></div>
+      <div class="cmd-row"><span class="cn">/code-review</span><span class="cd">代码审查，输出分类问题与修复建议</span></div>
+      <div class="cmd-row"><span class="cn">/security-scan</span><span class="cd">按 OWASP Top 10 做安全漏洞审计</span></div>
+      <div class="cmd-row"><span class="cn">/e2e</span><span class="cd">端到端测试用例生成与执行</span></div>
+      <div class="cmd-row"><span class="cn">/test-coverage</span><span class="cd">检查并推进测试覆盖率达到 80%+</span></div>
+      <div class="cmd-row"><span class="cn">/optimize</span><span class="cd">性能瓶颈定位与可落地的优化方案</span></div>
+      <div class="cmd-row"><span class="cn">/debug</span><span class="cd">深度调试，给出根因分析与修复步骤</span></div>
+      <div class="cmd-row"><span class="cn">/docs</span><span class="cd">从代码自动生成 API 文档与使用说明</span></div>
+      <div class="cmd-row"><span class="cn">/pm2</span><span class="cd">PM2 进程管理配置与启动脚本</span></div>
+      <div class="cmd-row"><span class="cn">/multi-plan</span><span class="cd">为多代理并行任务制定协作计划</span></div>
+      <div class="cmd-row"><span class="cn">/multi-execute</span><span class="cd">启动并行代理，同步执行复杂工作流</span></div>
+      <div class="cmd-row"><span class="cn">/multi-backend</span><span class="cd">多服务后端并行协同开发</span></div>
+      <div class="cmd-row"><span class="cn">/multi-frontend</span><span class="cd">多模块前端并行开发，自动对齐接口</span></div>
+      <div class="cmd-row"><span class="cn">/multi-workflow</span><span class="cd">复杂端到端全链路多代理工作流</span></div>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<!-- TIPS -->
+<div class="wrap">
+  <div class="sl">最佳实践</div>
+  <h2>用好它的关键</h2>
+  <p class="sub">这些是从实际使用中总结出的高频踩坑与配置技巧。</p>
+  <div class="tips-grid">
+
+    <div class="tip">
+      <h3>⚠️ Hooks 最常见的坑</h3>
+      <p>不要在 <code style="font-family:var(--mono);background:var(--bg2);padding:1px 5px;border-radius:3px;font-size:0.85em">plugin.json</code> 里显式声明 <code style="font-family:var(--mono);background:var(--bg2);padding:1px 5px;border-radius:3px;font-size:0.85em">"hooks"</code> 字段。Claude Code v2.1+ 会自动加载 <code style="font-family:var(--mono);background:var(--bg2);padding:1px 5px;border-radius:3px;font-size:0.85em">hooks/hooks.json</code>，手动声明会触发重复检测错误导致 hooks 失效。</p>
+    </div>
+
+    <div class="tip">
+      <h3>💰 控制 Token 成本</h3>
+      <p>在 <code style="font-family:var(--mono);background:var(--bg2);padding:1px 5px;border-radius:3px;font-size:0.85em">~/.claude/settings.json</code> 中配置以下参数，每次会话节省约 40% Token 消耗：</p>
+      <code class="tip-code">{
+  "model": "sonnet",
+  "MAX_THINKING_TOKENS": "10000",
+  "CLAUDE_CODE_AUTOCOMPACT_PCT_OVERRIDE": "50"
+}</code>
+    </div>
+
+    <div class="tip">
+      <h3>⚡ Skills 的正确用法</h3>
+      <p>技能库不会全部预加载，需在任务开始时明确指定域（如「加载 backend-api 技能」）。错误用法是不声明技能就期望专项输出，这样 Claude 只会给出通用建议，而不是针对你技术栈的最佳实践。</p>
+    </div>
+
+    <div class="tip">
+      <h3>🏆 实战背书</h3>
+      <p>该配置集源自 Anthropic × Forum Ventures 黑客松——8 小时构建 <strong style="color:var(--text-bright)">zenith.chat</strong>，在 100+ 队伍中夺冠，赢得 $15,000 API 奖励。这是经过真实产品压测的配置方案，不是理论最佳实践。</p>
+    </div>
+
+  </div>
+</div>
+
+<hr>
+
+<!-- INSTALL -->
+<div class="wrap" style="padding-top:0">
+  <div class="sl">快速开始</div>
+  <h2>安装方式</h2>
+  <p class="sub">推荐使用交互式向导，5 分钟完成安装。</p>
+  <div class="install-wrap">
+    <div class="inst-bar">
+      <div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div>
+      <span>TERMINAL</span>
+    </div>
+    <div class="inst-body">
+      <pre>
+<span class="ico"># 1. 克隆仓库</span>
+<span class="ip">$</span> <span class="ic">git clone https://github.com/affaan-m/everything-claude-code</span>
+
+<span class="ico"># 2. 交互式安装向导（推荐）</span>
+<span class="ip">$</span> <span class="ic">cd everything-claude-code && ./install.sh</span>
+
+<span class="ico"># 3. 或手动复制配置</span>
+<span class="ip">$</span> <span class="ic">cp -r .claude/* ~/.claude/</span>
+
+<span class="ico"># 4. 测试是否生效</span>
+<span class="ip">›</span> <span class="ic">/plan 帮我规划一个用户认证模块</span>
+
+<span class="iok">✓ Planner Agent 已启动，正在分析需求...</span>
+      </pre>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <span>everything-claude-code · by Affaan Mustafa · MIT License</span>
+  <a class="fl" href="https://github.com/affaan-m/everything-claude-code" target="_blank">→ GitHub 仓库</a>
+</footer>
+
+</body>
+</html>
