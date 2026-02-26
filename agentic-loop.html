@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agentic Loop</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Noto+Sans+SC:wght@300;400;500&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f7ff;
+    --surface: #ffffff;
+    --accent: #2563eb;
+    --accent2: #7c3aed;
+    --accent3: #ef4444;
+    --text: #1e1e2e;
+    --muted: #6b7280;
+    --border: rgba(0,0,0,0.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans SC', sans-serif;
+    font-weight: 300;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* Background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(37,99,235,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(37,99,235,0.06) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Hero */
+  header {
+    padding: 8rem 0 5rem;
+    text-align: center;
+    position: relative;
+  }
+
+  .hero-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+    opacity: 0;
+    animation: fadeUp 0.6s ease forwards 0.1s;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(3rem, 8vw, 6rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    margin-bottom: 2rem;
+    opacity: 0;
+    animation: fadeUp 0.6s ease forwards 0.2s;
+  }
+
+  h1 span {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-desc {
+    font-size: 1.1rem;
+    color: var(--muted);
+    max-width: 500px;
+    margin: 0 auto;
+    opacity: 0;
+    animation: fadeUp 0.6s ease forwards 0.3s;
+  }
+
+  /* Loop Diagram */
+  .loop-section {
+    padding: 4rem 0;
+    opacity: 0;
+    animation: fadeUp 0.6s ease forwards 0.5s;
+  }
+
+  .loop-diagram {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 3rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(37,99,235,0.06);
+  }
+
+  .loop-diagram::before {
+    content: '';
+    position: absolute;
+    top: -100px; right: -100px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(124,58,237,0.08), transparent 70%);
+    pointer-events: none;
+  }
+
+  .loop-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 2.5rem;
+  }
+
+  .loop-flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 1rem;
+  }
+
+  .loop-step {
+    flex: 1;
+    min-width: 140px;
+    text-align: center;
+    position: relative;
+  }
+
+  .step-circle {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 1.5rem;
+    position: relative;
+    transition: transform 0.3s ease;
+  }
+
+  .step-circle:hover { transform: scale(1.1); }
+
+  .step-1 .step-circle { background: linear-gradient(135deg, #dbeafe, #bfdbfe); border: 1px solid #93c5fd; }
+  .step-2 .step-circle { background: linear-gradient(135deg, #ede9fe, #ddd6fe); border: 1px solid #c4b5fd; }
+  .step-3 .step-circle { background: linear-gradient(135deg, #fee2e2, #fecaca); border: 1px solid #fca5a5; }
+  .step-4 .step-circle { background: linear-gradient(135deg, #fef3c7, #fde68a); border: 1px solid #fcd34d; }
+
+  .step-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.3rem;
+  }
+
+  .step-desc {
+    font-size: 0.75rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .arrow {
+    flex-shrink: 0;
+    color: var(--muted);
+    font-size: 1.2rem;
+    padding: 0 0.5rem;
+    padding-bottom: 2.5rem;
+  }
+
+  .loop-return {
+    margin-top: 1.5rem;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .loop-return-line {
+    height: 1px;
+    flex: 1;
+    background: linear-gradient(90deg, transparent, var(--muted), transparent);
+    opacity: 0.3;
+  }
+
+  /* Sections */
+  section {
+    padding: 3rem 0;
+  }
+
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+
+  h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+  }
+
+  /* Cards */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem;
+    transition: border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+
+  .card:hover {
+    border-color: rgba(37,99,235,0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(37,99,235,0.08);
+  }
+
+  .card-icon { font-size: 1.5rem; margin-bottom: 0.8rem; }
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+  .card-text { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
+
+  /* Code block */
+  .code-block {
+    background: #f8faff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.5rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    line-height: 1.8;
+    overflow-x: auto;
+    margin: 1.5rem 0;
+  }
+
+  .code-comment { color: #94a3b8; }
+  .code-key { color: var(--accent); }
+  .code-val { color: #059669; }
+  .code-action { color: var(--accent2); }
+  .code-obs { color: #d97706; }
+
+  /* Challenges */
+  .challenge-list {
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .challenge-item {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    padding: 1rem 1.2rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+
+  .challenge-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 2px; }
+  .challenge-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 0.2rem;
+  }
+  .challenge-text { font-size: 0.82rem; color: var(--muted); }
+
+  /* Divider */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 1rem 0;
+  }
+
+  /* Summary box */
+  .summary {
+    margin: 3rem 0 5rem;
+    padding: 2.5rem;
+    background: linear-gradient(135deg, rgba(37,99,235,0.05), rgba(124,58,237,0.05));
+    border: 1px solid rgba(37,99,235,0.15);
+    border-radius: 16px;
+    text-align: center;
+  }
+
+  .summary p {
+    font-size: 1.05rem;
+    color: var(--text);
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.8;
+  }
+
+  .summary strong {
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+  .animate.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Pulse dot */
+  .pulse {
+    display: inline-block;
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    margin-right: 0.5rem;
+    animation: pulse 2s ease infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Hero -->
+  <header>
+    <div class="hero-label"><span class="pulse"></span>AI Architecture</div>
+    <h1>Agentic<br><span>Loop</span></h1>
+    <p class="hero-desc">让 LLM 从「回答问题」进化为「完成任务」的核心运行机制</p>
+  </header>
+
+  <!-- Loop Diagram -->
+  <div class="loop-section">
+    <div class="loop-diagram">
+      <div class="loop-title">// 核心循环结构</div>
+      <div class="loop-flow">
+        <div class="loop-step step-1">
+          <div class="step-circle">👁</div>
+          <div class="step-name">Observe</div>
+          <div class="step-desc">感知环境<br>读取工具返回</div>
+        </div>
+        <div class="arrow">→</div>
+        <div class="loop-step step-2">
+          <div class="step-circle">🧠</div>
+          <div class="step-name">Think</div>
+          <div class="step-desc">LLM 推理<br>规划下一步</div>
+        </div>
+        <div class="arrow">→</div>
+        <div class="loop-step step-3">
+          <div class="step-circle">⚡</div>
+          <div class="step-name">Act</div>
+          <div class="step-desc">调用工具<br>执行操作</div>
+        </div>
+        <div class="arrow">→</div>
+        <div class="loop-step step-4">
+          <div class="step-circle">✓</div>
+          <div class="step-name">Evaluate</div>
+          <div class="step-desc">判断完成<br>或继续循环</div>
+        </div>
+      </div>
+      <div class="loop-return">
+        <div class="loop-return-line"></div>
+        &nbsp;↺ &nbsp;未完成则反馈结果，进入下一轮迭代&nbsp;
+        <div class="loop-return-line"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- vs 传统 -->
+  <section class="animate">
+    <div class="section-label">// 核心差异</div>
+    <h2>与传统 LLM 的区别</h2>
+    <div class="code-block">
+<div><span class="code-comment"># 传统 LLM —— 一次性推理</span></div>
+<div><span class="code-key">输入</span> → [<span class="code-action">LLM 单次推理</span>] → <span class="code-key">输出</span></div>
+<div>&nbsp;</div>
+<div><span class="code-comment"># Agentic Loop —— 多步迭代执行</span></div>
+<div><span class="code-key">输入</span></div>
+<div>&nbsp;&nbsp;→ [<span class="code-action">Think</span>] → [<span class="code-obs">Act: web_search</span>] → <span class="code-key">Observe 结果</span></div>
+<div>&nbsp;&nbsp;→ [<span class="code-action">Think</span>] → [<span class="code-obs">Act: write_file</span>] → <span class="code-key">Observe 结果</span></div>
+<div>&nbsp;&nbsp;→ [<span class="code-action">Think</span>] → 任务完成 → <span class="code-key">输出</span></div>
+    </div>
+  </section>
+
+  <!-- 核心要素 -->
+  <section class="animate">
+    <div class="section-label">// 组成要素</div>
+    <h2>四个核心组件</h2>
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">🧠</div>
+        <div class="card-title">LLM 大脑</div>
+        <div class="card-text">负责推理与决策。每轮读取完整上下文，判断下一步行动或终止循环。</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔧</div>
+        <div class="card-title">Tools 工具集</div>
+        <div class="card-text">Web 搜索、代码执行、文件读写、API 调用、数据库查询……LLM 通过工具与外部世界交互。</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">💾</div>
+        <div class="card-title">Memory 记忆</div>
+        <div class="card-text">上下文窗口作为短期记忆；外部向量数据库或文件系统提供长期记忆。</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🛑</div>
+        <div class="card-title">终止条件</div>
+        <div class="card-text">任务完成、达到最大步数、用户中断或遇到不可恢复错误时退出循环。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ReAct 示例 -->
+  <section class="animate">
+    <div class="section-label">// 执行示例</div>
+    <h2>ReAct 模式实例</h2>
+    <p style="color: var(--muted); font-size:0.9rem; margin-bottom:1.2rem;">任务：「帮我查一下北京今天的天气」</p>
+    <div class="code-block">
+<div><span class="code-comment">Step 1</span></div>
+<div><span class="code-key">Thought :</span> 我需要查询北京当前天气</div>
+<div><span class="code-action">Action  :</span> get_weather({ city: <span class="code-val">"Beijing"</span> })</div>
+<div><span class="code-obs">Observe :</span> { temp: 12, condition: "晴", wind: "东北风3级" }</div>
+<div>&nbsp;</div>
+<div><span class="code-comment">Step 2</span></div>
+<div><span class="code-key">Thought :</span> 已获取信息，可以回答用户了</div>
+<div><span class="code-key">Output  :</span> 北京今天晴天，12°C，东北风3级 ✓</div>
+    </div>
+  </section>
+
+  <!-- 挑战 -->
+  <section class="animate">
+    <div class="section-label">// 注意事项</div>
+    <h2>主要挑战</h2>
+    <div class="challenge-list">
+      <div class="challenge-item">
+        <div class="challenge-icon">📈</div>
+        <div>
+          <div class="challenge-title">Context 膨胀</div>
+          <div class="challenge-text">每轮循环上下文持续增长，消耗大量 Token，成本与延迟随之上升。</div>
+        </div>
+      </div>
+      <div class="challenge-item">
+        <div class="challenge-icon">🔗</div>
+        <div>
+          <div class="challenge-title">错误累积</div>
+          <div class="challenge-text">早期步骤的错误会被带入后续，在长链路中被放大，导致最终结果偏差。</div>
+        </div>
+      </div>
+      <div class="challenge-item">
+        <div class="challenge-icon">♾️</div>
+        <div>
+          <div class="challenge-title">无限循环风险</div>
+          <div class="challenge-text">缺乏有效终止条件时，Agent 可能陷入死循环，需要设置最大步数限制。</div>
+        </div>
+      </div>
+      <div class="challenge-item">
+        <div class="challenge-icon">🔒</div>
+        <div>
+          <div class="challenge-title">权限与安全</div>
+          <div class="challenge-text">应遵循最小权限原则，关键操作前保持 Human-in-the-loop，优先选择可逆操作。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Summary -->
+  <div class="summary animate">
+    <p>
+      Agentic Loop 是让 AI 具备<strong>自主完成复杂任务</strong>能力的核心机制——
+      通过反复的<strong>思考 → 行动 → 观察</strong>迭代，
+      使 LLM 能够处理需要多步骤、调用外部工具、与真实世界交互的任务。
+    </p>
+  </div>
+
+</div>
+
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.animate').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
